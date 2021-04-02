@@ -4,7 +4,8 @@ const timerSlicer=createSlice({
     initialState:{
             ticks:0,
             minutes:0,
-            seconds:0
+            seconds:0,
+            dispatch:true
     },
     reducers:{
         incrementTime:(state)=>{
@@ -15,10 +16,15 @@ const timerSlicer=createSlice({
             }
             else state.minutes=parseInt((state.ticks)/60)
             state.seconds=(state.ticks)%60;
+            state.dispatch=true;//ENABLE DISPATCHING(INCREMENTING OF COUNTER) AFTER COUNTER INCREMENT
+            //SET TO TRUE ONLY HERE
+        },
+        disableDispatch:(state)=>{
+            state.dispatch=false;
         }
     }
 })
-const {incrementTime}=timerSlicer.actions;
+export const {disableDispatch}=timerSlicer.actions;
 export default timerSlicer.reducer
 export const incrementTimer = ()=> (dispatch) => {//REDUX ASYNC THUNK-> WE CALL THIS IN COMPONENT
     setTimeout(() => {

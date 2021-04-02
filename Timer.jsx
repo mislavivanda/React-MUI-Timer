@@ -4,7 +4,7 @@ import PauseIcon from '@material-ui/icons/Pause';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import {makeStyles} from '@material-ui/core/styles';
 import { useSelector, useDispatch } from 'react-redux';
-import {incrementTimer} from '../redux/slicers/timer';//import REDUX THUNK FUNCTION
+import {incrementTimer,disableDispatch} from '../redux/slicers/timer';//import REDUX THUNK FUNCTION
 const useStyles=makeStyles((theme)=>({
     timeBox:{
         display:'flex',
@@ -24,23 +24,32 @@ const useStyles=makeStyles((theme)=>({
 export default function Timer() {
     const classes=useStyles();
     const [paused,setPaused]=useState(true);
+    //WE INTRODUCE THIS STATE VARIABLE TO FIX THE BUG IN WHICH MULTIPLE CLICKS ON PLAY ICON IN <1s MAKE MULTIPLE DISPATCHES THUS INCREMENTS OF TIMER INSTEAD OF JUST ONE
+    const dispatchEnable=useSelector(state=>state.timer.dispatch);
     const time=useSelector(state=>state.timer);
     const dispatch = useDispatch();
   
     useEffect(()=>{
         if(!paused)
         {
-            dispatch(incrementTimer());
+            dispatch(incrementTimer());//ALWAYS INCREMENT TIMER WHEN PAUSE=false
         }
     },[time.ticks]);
     useEffect(()=>{
         if(!paused)
         {
-           dispatch(incrementTimer());
+            if(dispatchEnable)//IF TRUE-> TIMER CAN BE INCREMENTED,ELSE TIMER CANT BE INCREMENTED-> 1 SECOND HASNT GONE YET
+            {
+                dispatch(incrementTimer());//INCREMENT TIMER
+            }
         }
     },[paused]);
     const handlePauseChange=(event)=>{  
-        setPaused(!paused)
+        if(!paused)//IF PAUSED=FALSE BEFORE CLICK-> WE WANT TO STOP TIMER WITH CLICK-> dispatch=false-> DONT INCREMENT COUNTER-> DISABLE DISPATCHING
+        {
+            dispatch(disableDispatch());//SET IT TO FALSE ONLY HERE
+        }
+        setPaused(!paused);//ALWAYS DO THIS AFTER CLICK
     }   
     return (
         <Box>
